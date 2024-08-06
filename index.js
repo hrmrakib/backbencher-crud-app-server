@@ -35,6 +35,35 @@ db.connect((err) => {
   console.log("Connected to MySQL");
 });
 
+// create a new user
+app.post("/create", async (req, res) => {
+  const { userName, userEmail } = req.body;
+
+  // firstly, check email already existed
+  const isEmailExist = "SELECT * FROM users WHERE email = ?";
+
+  db.query(isEmailExist, [userEmail], (err, result) => {
+    if (err) {
+      return res.send({ message: "Database Query error!" });
+    }
+    console.log("backend: ", result.length);
+    if (result.length > 0) {
+      return res.send({ isExist: true });
+    } else {
+      // now create a new user
+      const sql = "INSERT INTO users (name, email) VALUES (?, ?)";
+
+      db.query(sql, [userName, userEmail], (err, data) => {
+        if (err) {
+          return res.send(err);
+        }
+        return res.send({ message: "success" });
+      });
+    }
+  });
+});
+
+// get all users
 app.get("/users", async (req, res) => {
   const sql = "SELECT * FROM users";
 
@@ -42,11 +71,24 @@ app.get("/users", async (req, res) => {
     if (err) {
       return res.send("Something wrong happened!");
     }
-
     return res.send(data);
   });
+});
 
-  // res.send("hello - express + mysql");
+app.put("/update", async (req, res) => {});
+
+// delete a user
+app.delete("/delete/:email", async (req, res) => {
+  const { email } = req.params;
+  const sql = "DELETE FROM users WHERE email = ?";
+
+  db.query(sql, [email], (err, result) => {
+    if (err) {
+      return res.send({ message: "Server error!" });
+    }
+    console.log({ result });
+    return res.send(result);
+  });
 });
 
 app.listen(port, () => {
