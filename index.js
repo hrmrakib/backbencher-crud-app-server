@@ -36,7 +36,7 @@ db.connect((err) => {
 });
 
 // create a new user
-app.post("/create", async (req, res) => {
+app.post("/create", (req, res) => {
   const { userName, userEmail } = req.body;
 
   // firstly, check email already existed
@@ -46,7 +46,7 @@ app.post("/create", async (req, res) => {
     if (err) {
       return res.send({ message: "Database Query error!" });
     }
-    console.log("backend: ", result.length);
+
     if (result.length > 0) {
       return res.send({ isExist: true });
     } else {
@@ -64,7 +64,7 @@ app.post("/create", async (req, res) => {
 });
 
 // get all users
-app.get("/users", async (req, res) => {
+app.get("/users", (req, res) => {
   const sql = "SELECT * FROM users";
 
   db.query(sql, (err, data) => {
@@ -75,10 +75,21 @@ app.get("/users", async (req, res) => {
   });
 });
 
-app.put("/update", async (req, res) => {});
+app.put("/update/:userEmail", (req, res) => {
+  const { userEmail } = req.params;
+  const { onChangeUpdateName: name, onChangeUpdateEmail: email } = req.body;
+
+  const sql = "UPDATE users SET name = ?, email = ? WHERE email = ?";
+  db.query(sql, [name, email, userEmail], (err, result) => {
+    if (err) {
+      return res.send({ error: "Database query error!" }, err);
+    }
+    return res.send({ message: "success" });
+  });
+});
 
 // delete a user
-app.delete("/delete/:email", async (req, res) => {
+app.delete("/delete/:email", (req, res) => {
   const { email } = req.params;
   const sql = "DELETE FROM users WHERE email = ?";
 
@@ -86,7 +97,6 @@ app.delete("/delete/:email", async (req, res) => {
     if (err) {
       return res.send({ message: "Server error!" });
     }
-    console.log({ result });
     return res.send(result);
   });
 });
