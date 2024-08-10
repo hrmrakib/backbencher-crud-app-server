@@ -35,6 +35,11 @@ db.connect((err) => {
   console.log("Connected to MySQL");
 });
 
+// default for base path
+app.get("/", (req, res) => {
+  res.send("Hello, I am on with mysql db ....");
+});
+
 // create a new user
 app.post("/create", (req, res) => {
   const { userName, userEmail } = req.body;
